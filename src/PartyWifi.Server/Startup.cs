@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PartyWifi.Server.Components;
+using PartyWifi.Server.DataModel;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace PartyWifi.Server
@@ -24,6 +26,12 @@ namespace PartyWifi.Server
                 builder.AddApplicationInsightsSettings(developerMode: true);
             }
             Configuration = builder.Build();
+
+            using (var dbContext = new PartyWifiContext())
+            {
+                dbContext.Database.EnsureCreated();
+                dbContext.Database.Migrate();
+            }
         }
 
         public IConfigurationRoot Configuration { get; }
