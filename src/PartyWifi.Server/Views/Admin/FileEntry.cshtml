@@ -1,0 +1,11 @@
+@model PartyWifi.Server.Models.FileListEntry
+
+@{
+  var segments = Model.Id.Split('-');
+}
+
+<tr>
+    <td><img width="155" src="/image/thumbnail/@Model.Id"/></td>
+    <td><span>@segments[0]</span><span class="hidden-sm-down">-@string.Join("-", segments.Skip(1))</span></td>
+    <td>Foo</td>
+</tr>
