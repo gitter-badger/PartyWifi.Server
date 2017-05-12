@@ -33,12 +33,3 @@
 </table>
 
 @Html.Partial("Pagination", Model)
-
-<script>
-
-
-    function rotationTimeChanged(time) {
-        $.post('admin/rotationTime', { seconds: time });
-    }
-
-</script>

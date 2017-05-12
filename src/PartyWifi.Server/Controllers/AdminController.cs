@@ -25,6 +25,13 @@ namespace PartyWifi.Server.Controllers
             return View(fileList);
         }
 
+        [HttpDelete]
+        public IActionResult Delete(string id)
+        {
+            _imageManager.Delete(id);
+            return Ok();
+        }
+
         [HttpPost]
         public IActionResult RotationTime([FromBody]int seconds)
         {
