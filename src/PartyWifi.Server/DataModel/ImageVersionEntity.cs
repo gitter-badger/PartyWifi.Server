@@ -1,6 +1,6 @@
 namespace PartyWifi.Server.DataModel
 {
-    public class ImageVersionEntity
+    public class ImageVersionEntity : IEntity
     {
         public long Id { get; set; }
 

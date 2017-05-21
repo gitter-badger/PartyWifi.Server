@@ -26,12 +26,6 @@ namespace PartyWifi.Server
                 builder.AddApplicationInsightsSettings(developerMode: true);
             }
             Configuration = builder.Build();
-
-            using (var dbContext = new PartyWifiContext())
-            {
-                dbContext.Database.EnsureCreated();
-                dbContext.Database.Migrate();
-            }
         }
 
         public IConfigurationRoot Configuration { get; }

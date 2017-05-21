@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace PartyWifi.Server.DataModel
 {
-    public class ImageUploadEntity
+    public class ImageUploadEntity : IEntity
     {
         public long Id { get; set; }
 
