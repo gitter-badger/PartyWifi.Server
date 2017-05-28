@@ -1,4 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using ImageSharp;
 using Microsoft.AspNetCore.Mvc;
 using PartyWifi.Server.Components;
 using PartyWifi.Server.Models;
@@ -20,15 +24,64 @@ namespace PartyWifi.Server.Controllers
         // GET: /<controller>/
         public IActionResult Index([FromQuery]int? page)
         {
-            var fileList = _imageManager.FileList<AdminModel>(page ?? 1, 10);
-            fileList.RotationTime = _slideshowHandler.RotationMs;
-            return View(fileList);
+            var adminModel = _imageManager.FileList<AdminModel>(page ?? 1, 10);
+            adminModel.RotationTime = _slideshowHandler.RotationMs;
+            adminModel.ExportDirectories = GetDirectories();
+            return View(adminModel);
         }
 
-        [HttpDelete]
-        public IActionResult Delete(string id)
+        ///<summary>
+        /// Get possible export directories
+        ///</summary>
+        private string[] GetDirectories()
         {
-            _imageManager.Delete(id);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                throw new NotImplementedException("Can not detect drives on OSX");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                // This only works on Ubuntu so far
+                var mediaDir = Directory.GetDirectories("/media")[0];
+                return Directory.GetDirectories(mediaDir);  
+            }
+            else
+            {
+                // Hope that windows works
+                return System.IO.DriveInfo.GetDrives().Select(d => d.Name).ToArray();
+            }
+        }
+
+
+        public class ImageExportRequest
+        {
+            // Path to export the images to
+            public string Path { get; set; }
+
+            // Images that shall be exported. Can be null to export all
+            public string[] IncludedImages { get; set; }
+        }
+        [HttpPost]
+        public IActionResult Export([FromBody]ImageExportRequest exportRequest)
+        {
+            var images = _imageManager.GetRange(0, _imageManager.ImageCount);
+
+            for (int i = 0; i < images.Length; i++)
+            {
+                var image = images[i];
+                // Check if image should be exported
+                if(exportRequest.IncludedImages != null && !exportRequest.IncludedImages.Contains(image.Id))
+                    continue;
+
+                var original = image.Versions.First(a => a.Version == ImageVersions.Original);
+                var fileName = Path.Combine(exportRequest.Path, image.UploadDate.ToString("yyyyMMdd-hhmmss_fff") + ".jpg");
+                
+                using (var img = _imageManager.Open(original.ImageHash))
+                using (var fs = new FileStream(fileName, FileMode.CreateNew))
+                {
+                    Image.Load(img).SaveAsJpeg(fs);
+                }
+            }
             return Ok();
         }
 
@@ -39,9 +92,18 @@ namespace PartyWifi.Server.Controllers
             return Ok();
         }
 
+        [HttpDelete]
+        public IActionResult Delete(string id)
+        {
+            _imageManager.Delete(id);
+            return Ok();
+        }
+
         public class AdminModel : FileList
         {
             public int RotationTime { get; set; }
+
+            public string[] ExportDirectories { get; set; }
 
             public override string PageUrlBuilder(int page)
             {
