@@ -37,21 +37,24 @@ namespace PartyWifi.Server.Controllers
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                throw new NotImplementedException("Can not detect drives on OSX");
+                var mediaDir = Directory.GetDirectories("/Volumes")[0];
+                return Directory.GetDirectories(mediaDir);
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 // This only works on Ubuntu so far
                 var mediaDir = Directory.GetDirectories("/media")[0];
                 return Directory.GetDirectories(mediaDir);  
             }
-            else
-            {
-                // Hope that windows works
-                return System.IO.DriveInfo.GetDrives().Select(d => d.Name).ToArray();
-            }
-        }
 
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return DriveInfo.GetDrives().Select(d => d.Name).ToArray();
+            }
+
+            return new string[0];
+        }
 
         public class ImageExportRequest
         {
@@ -61,14 +64,14 @@ namespace PartyWifi.Server.Controllers
             // Images that shall be exported. Can be null to export all
             public string[] IncludedImages { get; set; }
         }
+
         [HttpPost]
         public IActionResult Export([FromBody]ImageExportRequest exportRequest)
         {
             var images = _imageManager.GetRange(0, _imageManager.ImageCount);
 
-            for (int i = 0; i < images.Length; i++)
+            foreach (var image in images)
             {
-                var image = images[i];
                 // Check if image should be exported
                 if(exportRequest.IncludedImages != null && !exportRequest.IncludedImages.Contains(image.Id))
                     continue;
@@ -82,6 +85,7 @@ namespace PartyWifi.Server.Controllers
                     Image.Load(img).SaveAsJpeg(fs);
                 }
             }
+
             return Ok();
         }
 
