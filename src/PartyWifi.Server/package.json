@@ -6,7 +6,7 @@
   "author": "PartyWifi Server",
   "license": {
     "type": "GPLv3",
-    "url": "https://github.com/dbeuchler/PartyWifi.Server/blob/master/LICENSE"
+    "url": "https://github.com/PartyWifi/PartyWifi.Server/blob/master/LICENSE"
   },
   "devDependencies": {
     "bootstrap": "4.0.0-alpha.6",
@@ -23,6 +23,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.beuchler.eu/dbeuchler/PartyWifi.Server"
+    "url": "https://github.com/PartyWifi/PartyWifi.Server.git"
   }
 }
